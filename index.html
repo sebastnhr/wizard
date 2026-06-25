@@ -1,248 +1,317 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grimorio Digital - Vaelthir Aethermoor</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grimorio del Hechicero — Ficha de Personaje</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <div class="header-top">
-                <div class="avatar">✨</div>
-                <div class="character-info">
-                    <h1 id="charName">Vaelthir Aethermoor</h1>
-                    <p id="charClass">Elfo Mago - Nivel <span id="charLevelDisplay">6</span></p>
-                </div>
+  <div class="arcane-bg"></div>
+
+  <div class="container">
+    <!-- Cabecera -->
+    <header class="sheet-header">
+      <div class="header-ornament top"></div>
+      <div class="header-content">
+        <div class="class-emblem" title="Hechicero">🔮</div>
+        <div class="header-fields">
+          <div class="field-row main-name">
+            <label>Nombre del Personaje</label>
+            <input type="text" id="charName" class="field-input large" placeholder="Nombre del hechicero">
+          </div>
+          <div class="field-grid">
+            <div class="field-row">
+              <label>Clase y Nivel</label>
+              <input type="text" id="charClass" class="field-input" placeholder="Hechicero 6">
             </div>
-            
-            <div class="quick-stats">
-                <div class="stat-box">
-                    <div class="stat-label">❤️ PG</div>
-                    <div class="stat-value" id="hpDisplay">32/32</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">🛡️ CA</div>
-                    <div class="stat-value" id="acDisplay">13</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">⚡ Iniciativa</div>
-                    <div class="stat-value" id="initDisplay">+3</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">⚔️ Ataque Base</div>
-                    <div class="stat-value" id="baseAttackDisplay">+3</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">🌟 Experiencia</div>
-                    <div class="stat-value" style="font-size: 1.2rem;" id="xpDisplay">15000 / 21000</div>
-                </div>
+            <div class="field-row">
+              <label>Raza</label>
+              <input type="text" id="charRace" class="field-input" placeholder="Tiefling">
             </div>
-        </div>
-
-        <!-- Toolbar -->
-        <div class="toolbar">
-            <button class="btn btn-primary" onclick="saveAllData()">💾 Guardar Todo</button>
-            <div id="saveMessage" style="display: none;"></div>
-        </div>
-
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('stats')">Estadísticas</button>
-            <button class="tab" onclick="switchTab('combat')">Combate</button>
-            <button class="tab" onclick="switchTab('skills')">Habilidades</button>
-            <button class="tab" onclick="switchTab('spells')">Hechizos</button>
-            <button class="tab" onclick="switchTab('feats')">Dotes</button>
-            <button class="tab" onclick="switchTab('equipment')">Equipo</button>
-            <button class="tab" onclick="switchTab('languages')">Idiomas</button>
-            <button class="tab" onclick="switchTab('wealth')">Riquezas</button>
-        </div>
-
-        <!-- Stats Tab -->
-        <div id="statsTab" class="tab-content active">
-            <div class="grid-2">
-                <div class="card">
-                    <h2 class="card-title">⭐ Características</h2>
-                    <div id="statsContainer"></div>
-                    
-                    <div class="hp-editor">
-                        <span style="color: #5eead4; font-weight: bold;">PG:</span>
-                        <input type="number" class="input" id="hpCurrent" onchange="updateHP()">
-                        <span style="color: #5eead4;">/</span>
-                        <input type="number" class="input" id="hpMax" onchange="updateHP()">
-                        <div class="hp-bar">
-                            <div class="hp-fill" id="hpBar" style="width: 100%;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2 class="card-title">🛡️ Salvaciones</h2>
-                    <div id="savesContainer"></div>
-                    
-                    <div style="margin-top: 20px;">
-                        <h3 style="color: #fbbf24; margin-bottom: 10px;">📖 Especialización</h3>
-                        <input type="text" class="input input-wide" id="specialization" placeholder="Escuela de especialización">
-                    </div>
-                    
-                    <div style="margin-top: 20px;">
-                        <h3 style="color: #ef4444; margin-bottom: 10px;">🌙 Escuelas Prohibidas</h3>
-                        <textarea class="textarea" id="prohibitedSchools" placeholder="Escribe las escuelas prohibidas separadas por comas"></textarea>
-                    </div>
-                </div>
+            <div class="field-row">
+              <label>Trasfondo</label>
+              <input type="text" id="charBackground" class="field-input" placeholder="Erudito">
             </div>
-        </div>
-
-        <!-- Combat Tab -->
-        <div id="combatTab" class="tab-content">
-            <div class="grid-3">
-                <div class="card">
-                    <h2 class="card-title">⚔️ Combate</h2>
-                    <div class="form-group">
-                        <label class="form-label">Ataque Base</label>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <input type="number" class="input" id="baseAttack" readonly style="cursor: not-allowed; opacity: 0.7; width: 80px;">
-                            <span style="color: #5eead4;">+</span>
-                            <input type="number" class="input" id="baseAttackMod" placeholder="Mod" style="width: 80px;" onchange="calculateCombatStats()">
-                        </div>
-                        <small style="color: #5eead4; font-size: 0.85rem;">Base (auto) + Modificador temporal</small>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Clase de Armadura (CA)</label>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <input type="number" class="input" id="ac" readonly style="cursor: not-allowed; opacity: 0.7; width: 80px;">
-                            <span style="color: #5eead4;">+</span>
-                            <input type="number" class="input" id="acMod" placeholder="Mod" style="width: 80px;" onchange="calculateCombatStats()">
-                        </div>
-                        <small style="color: #5eead4; font-size: 0.85rem;">10 + Mod DES + Modificador temporal</small>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Iniciativa</label>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <input type="number" class="input" id="initiative" readonly style="cursor: not-allowed; opacity: 0.7; width: 80px;">
-                            <span style="color: #5eead4;">+</span>
-                            <input type="number" class="input" id="initiativeMod" placeholder="Mod" style="width: 80px;" onchange="calculateCombatStats()">
-                        </div>
-                        <small style="color: #5eead4; font-size: 0.85rem;">Mod DES + Modificador temporal</small>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Velocidad</label>
-                        <input type="text" class="input input-wide" id="speed" placeholder="ej: 30'">
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2 class="card-title">🛡️ Resistencias</h2>
-                    <div class="form-group">
-                        <label class="form-label">Resistencia a Conjuros</label>
-                        <input type="number" class="input input-wide" id="spellResistance">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Reducción del Daño</label>
-                        <input type="text" class="input input-wide" id="damageReduction" placeholder="ej: 5/mágico">
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2 class="card-title">📊 Experiencia</h2>
-                    <div class="form-group">
-                        <label class="form-label">XP Actual</label>
-                        <input type="number" class="input input-wide" id="currentXP" onchange="calculateLevel()">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Nivel Actual</label>
-                        <input type="number" class="input input-wide" id="currentLevel" readonly style="cursor: not-allowed; opacity: 0.7;">
-                        <small style="color: #5eead4; font-size: 0.85rem;">Calculado automáticamente</small>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">XP para Siguiente Nivel</label>
-                        <input type="number" class="input input-wide" id="nextLevelXP" readonly style="cursor: not-allowed; opacity: 0.7;">
-                        <small style="color: #5eead4; font-size: 0.85rem;">Calculado automáticamente</small>
-                    </div>
-                </div>
+            <div class="field-row">
+              <label>Alineamiento</label>
+              <input type="text" id="charAlignment" class="field-input" placeholder="Caótico Bueno">
             </div>
-        </div>
-
-        <!-- Skills Tab -->
-        <div id="skillsTab" class="tab-content">
-            <div class="card">
-                <h2 class="card-title">🎯 Habilidades</h2>
-                <button class="btn btn-secondary btn-small" onclick="addSkill()" style="margin-bottom: 15px;">+ Agregar Habilidad</button>
-                <div id="skillsContainer" class="item-list"></div>
+            <div class="field-row">
+              <label>Jugador</label>
+              <input type="text" id="playerName" class="field-input" placeholder="Tu nombre">
             </div>
-        </div>
-
-        <!-- Spells Tab -->
-        <div id="spellsTab" class="tab-content">
-            <div class="card">
-                <div id="spellsContainer"></div>
+            <div class="field-row">
+              <label>Experiencia</label>
+              <input type="number" id="charXP" class="field-input" placeholder="0">
             </div>
+          </div>
         </div>
+      </div>
+      <div class="header-ornament bottom"></div>
+    </header>
 
-        <!-- Feats Tab -->
-        <div id="featsTab" class="tab-content">
-            <div class="card">
-                <h2 class="card-title">⚡ Dotes</h2>
-                <button class="btn btn-secondary btn-small" onclick="addFeat()" style="margin-bottom: 15px;">+ Agregar Dote</button>
-                <div id="featsContainer" class="item-list"></div>
-            </div>
-        </div>
-
-        <!-- Equipment Tab -->
-        <div id="equipmentTab" class="tab-content">
-            <div class="card">
-                <h2 class="card-title">🎒 Equipo y Pertenencias</h2>
-                <button class="btn btn-secondary btn-small" onclick="addItem()" style="margin-bottom: 15px;">+ Agregar Objeto</button>
-                <div id="equipmentContainer" class="item-list"></div>
-            </div>
-        </div>
-
-        <!-- Languages Tab -->
-        <div id="languagesTab" class="tab-content">
-            <div class="card">
-                <h2 class="card-title">🗣️ Idiomas</h2>
-                <textarea class="textarea" id="languages" placeholder="Escribe los idiomas separados por comas (ej: Élfico, Común, Dragónico)"></textarea>
-            </div>
-        </div>
-
-        <!-- Wealth Tab -->
-        <div id="wealthTab" class="tab-content">
-            <div class="grid-2">
-                <div class="card">
-                    <h2 class="card-title">💰 Monedas</h2>
-                    <div class="form-group">
-                        <label class="form-label">Oro (PO)</label>
-                        <input type="number" class="input input-wide" id="gold">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Plata (PP)</label>
-                        <input type="number" class="input input-wide" id="silver">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Cobre (PC)</label>
-                        <input type="number" class="input input-wide" id="copper">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Platino (PPT)</label>
-                        <input type="number" class="input input-wide" id="platinum">
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2 class="card-title">💎 Otros Tesoros</h2>
-                    <textarea class="textarea" id="treasures" placeholder="Gemas, arte, objetos valiosos..."></textarea>
-                </div>
-            </div>
-        </div>
-
-        <div class="footer">
-            "El conocimiento arcano es la llave que abre las puertas entre los planos"
-        </div>
+    <!-- Barra de acciones -->
+    <div class="action-bar">
+      <button class="btn btn-save" id="btnSave">⚗️ Guardar Grimorio</button>
+      <button class="btn btn-reset" id="btnReset">🔄 Recargar</button>
+      <span class="save-status" id="saveStatus"></span>
     </div>
 
-    <script src="character-data.js"></script>
-    <script src="app.js"></script>
+    <!-- Pestañas -->
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="stats">⚔️ Estadísticas</button>
+      <button class="tab" data-tab="combat">🛡️ Combate</button>
+      <button class="tab" data-tab="spells">✨ Hechizos</button>
+      <button class="tab" data-tab="origin">🐉 Origen</button>
+      <button class="tab" data-tab="roleplay">📖 Historia</button>
+      <button class="tab" data-tab="gear">🎒 Equipo</button>
+    </nav>
+
+    <!-- TAB: Estadísticas -->
+    <section class="tab-panel active" id="panel-stats">
+      <div class="sheet-grid stats-layout">
+        <!-- Columna izquierda: Atributos -->
+        <div class="parchment-card abilities-card">
+          <h2 class="card-title">Características</h2>
+          <div class="abilities-grid" id="abilitiesGrid"></div>
+          <div class="inspiration-box">
+            <label class="checkbox-label">
+              <input type="checkbox" id="inspiration">
+              <span>✨ Inspiración</span>
+            </label>
+            <div class="prof-bonus">
+              <span>Bonificador de Competencia</span>
+              <input type="number" id="profBonus" class="field-input small" value="2">
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna central: Salvaciones y Habilidades -->
+        <div class="parchment-card">
+          <h2 class="card-title">Tiradas de Salvación</h2>
+          <div id="savesContainer" class="saves-list"></div>
+
+          <h2 class="card-title mt">Habilidades</h2>
+          <div id="skillsContainer" class="skills-list"></div>
+          <button class="btn btn-add" id="btnAddSkill">+ Añadir Habilidad</button>
+        </div>
+
+        <!-- Columna derecha: Combate rápido -->
+        <div class="parchment-card combat-quick">
+          <h2 class="card-title">Combate</h2>
+          <div class="combat-stat">
+            <label>Clase de Armadura</label>
+            <input type="number" id="ac" class="field-input combat-big">
+          </div>
+          <div class="combat-stat">
+            <label>Iniciativa</label>
+            <input type="text" id="initiative" class="field-input combat-big">
+          </div>
+          <div class="combat-stat">
+            <label>Velocidad</label>
+            <input type="text" id="speed" class="field-input" placeholder="30 pies">
+          </div>
+          <div class="hp-section">
+            <label>Puntos de Golpe</label>
+            <div class="hp-row">
+              <div class="hp-field">
+                <span>Máx</span>
+                <input type="number" id="hpMax" class="field-input">
+              </div>
+              <div class="hp-field">
+                <span>Actual</span>
+                <input type="number" id="hpCurrent" class="field-input">
+              </div>
+              <div class="hp-field">
+                <span>Temp</span>
+                <input type="number" id="hpTemp" class="field-input">
+              </div>
+            </div>
+            <div class="hp-bar"><div class="hp-fill" id="hpFill"></div></div>
+          </div>
+          <div class="combat-stat">
+            <label>Dados de Golpe</label>
+            <input type="text" id="hitDice" class="field-input" placeholder="6d6">
+          </div>
+          <div class="death-saves">
+            <label>Salvaciones contra la Muerte</label>
+            <div class="death-row">
+              <span>Éxitos</span>
+              <div class="death-dots" id="deathSuccesses"></div>
+              <span>Fallos</span>
+              <div class="death-dots" id="deathFailures"></div>
+            </div>
+          </div>
+          <div class="passive-perception">
+            <label>Percepción Pasiva</label>
+            <span class="passive-value" id="passivePerception">10</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB: Combate -->
+    <section class="tab-panel" id="panel-combat">
+      <div class="sheet-grid">
+        <div class="parchment-card wide">
+          <h2 class="card-title">Ataques y Conjuros</h2>
+          <div class="table-header attacks-header">
+            <span>Nombre</span>
+            <span>Bonificador</span>
+            <span>Daño / Tipo</span>
+            <span></span>
+          </div>
+          <div id="attacksContainer"></div>
+          <button class="btn btn-add" id="btnAddAttack">+ Añadir Ataque</button>
+        </div>
+        <div class="parchment-card wide">
+          <h2 class="card-title">Rasgos y Dotes</h2>
+          <textarea id="features" class="field-textarea tall" placeholder="Rasgos de clase, raza, trasfondo..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB: Hechizos -->
+    <section class="tab-panel" id="panel-spells">
+      <div class="spellcasting-header parchment-card">
+        <h2 class="card-title">Conjuro</h2>
+        <div class="spell-stats-grid">
+          <div class="spell-stat">
+            <label>Habilidad de Conjuro</label>
+            <select id="spellAbility" class="field-input">
+              <option value="cha">Carisma</option>
+              <option value="int">Inteligencia</option>
+              <option value="wis">Sabiduría</option>
+            </select>
+          </div>
+          <div class="spell-stat">
+            <label>CD de Salvación</label>
+            <input type="number" id="spellSaveDC" class="field-input combat-big" readonly>
+          </div>
+          <div class="spell-stat">
+            <label>Bonificador de Ataque</label>
+            <input type="text" id="spellAttackBonus" class="field-input combat-big" readonly>
+          </div>
+          <div class="spell-stat sorcery-points">
+            <label>Puntos de Hechicería</label>
+            <div class="sorcery-row">
+              <input type="number" id="sorceryCurrent" class="field-input" min="0">
+              <span>/</span>
+              <input type="number" id="sorceryMax" class="field-input" min="0">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="parchment-card">
+        <h2 class="card-title">Trucos (Cantrips)</h2>
+        <div id="cantripsContainer"></div>
+        <button class="btn btn-add" id="btnAddCantrip">+ Añadir Truco</button>
+      </div>
+
+      <div class="spell-slots-bar parchment-card">
+        <h2 class="card-title">Espacios de Conjuro</h2>
+        <div class="slots-grid" id="slotsGrid"></div>
+      </div>
+
+      <div id="spellsByLevel"></div>
+    </section>
+
+    <!-- TAB: Origen y Metamagia -->
+    <section class="tab-panel" id="panel-origin">
+      <div class="sheet-grid">
+        <div class="parchment-card">
+          <h2 class="card-title">Origen de Hechicería</h2>
+          <input type="text" id="sorcererOrigin" class="field-input wide" placeholder="Linaje Dracónico, Magia Salvaje...">
+          <p class="hint">El origen define de dónde proviene tu magia innata.</p>
+        </div>
+        <div class="parchment-card wide">
+          <h2 class="card-title">Metamagia</h2>
+          <div id="metamagicContainer"></div>
+          <button class="btn btn-add" id="btnAddMetamagic">+ Añadir Metamagia</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB: Historia -->
+    <section class="tab-panel" id="panel-roleplay">
+      <div class="sheet-grid roleplay-grid">
+        <div class="parchment-card">
+          <h2 class="card-title">Rasgos de Personalidad</h2>
+          <textarea id="traitPersonality" class="field-textarea"></textarea>
+        </div>
+        <div class="parchment-card">
+          <h2 class="card-title">Ideales</h2>
+          <textarea id="traitIdeals" class="field-textarea"></textarea>
+        </div>
+        <div class="parchment-card">
+          <h2 class="card-title">Vínculos</h2>
+          <textarea id="traitBonds" class="field-textarea"></textarea>
+        </div>
+        <div class="parchment-card">
+          <h2 class="card-title">Defectos</h2>
+          <textarea id="traitFlaws" class="field-textarea"></textarea>
+        </div>
+        <div class="parchment-card wide">
+          <h2 class="card-title">Apariencia</h2>
+          <div class="appearance-grid">
+            <div class="field-row"><label>Edad</label><input type="text" id="appAge" class="field-input"></div>
+            <div class="field-row"><label>Altura</label><input type="text" id="appHeight" class="field-input"></div>
+            <div class="field-row"><label>Peso</label><input type="text" id="appWeight" class="field-input"></div>
+            <div class="field-row"><label>Ojos</label><input type="text" id="appEyes" class="field-input"></div>
+            <div class="field-row"><label>Piel</label><input type="text" id="appSkin" class="field-input"></div>
+            <div class="field-row"><label>Cabello</label><input type="text" id="appHair" class="field-input"></div>
+          </div>
+        </div>
+        <div class="parchment-card wide">
+          <h2 class="card-title">Historia del Personaje</h2>
+          <textarea id="backstory" class="field-textarea tall"></textarea>
+        </div>
+        <div class="parchment-card">
+          <h2 class="card-title">Aliados y Organizaciones</h2>
+          <textarea id="allies" class="field-textarea"></textarea>
+        </div>
+        <div class="parchment-card">
+          <h2 class="card-title">Tesoro Adicional</h2>
+          <textarea id="treasure" class="field-textarea"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB: Equipo -->
+    <section class="tab-panel" id="panel-gear">
+      <div class="sheet-grid">
+        <div class="parchment-card wide">
+          <h2 class="card-title">Equipo</h2>
+          <textarea id="equipment" class="field-textarea tall"></textarea>
+        </div>
+        <div class="parchment-card">
+          <h2 class="card-title">Otras Competencias e Idiomas</h2>
+          <textarea id="proficiencies" class="field-textarea"></textarea>
+        </div>
+        <div class="parchment-card">
+          <h2 class="card-title">Monedas</h2>
+          <div class="coins-grid">
+            <div class="coin-field"><label>PC</label><input type="number" id="coinCP" class="field-input" min="0"></div>
+            <div class="coin-field"><label>PP</label><input type="number" id="coinSP" class="field-input" min="0"></div>
+            <div class="coin-field"><label>PE</label><input type="number" id="coinEP" class="field-input" min="0"></div>
+            <div class="coin-field"><label>PO</label><input type="number" id="coinGP" class="field-input" min="0"></div>
+            <div class="coin-field"><label>PPT</label><input type="number" id="coinPP" class="field-input" min="0"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="sheet-footer">
+      <p class="quote">"La magia no se aprende — se despierta, se siente, se libera."</p>
+      <p class="credit">Ficha de Hechicero · D&amp;D 5ª Edición · Grimorio Digital</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>

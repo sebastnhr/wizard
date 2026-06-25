@@ -1,770 +1,739 @@
 // ============================================
-// CONFIGURACIÃ"N DE GOOGLE SHEETS
+// GRIMORIO DEL HECHICERO — Lógica de la ficha
 // ============================================
-const SHEET_CONFIG = {
-    spreadsheetId: '1zyjiWR4HAuHGGJ7eVrRhupZtWyEu1HCrcWpk9zafWvE', // Cámbialo por el ID de tu hoja
-    apiKey: 'AIzaSyB2vuBFaetJsTaoXFJpLdeNLQPvg5PlJsc', // Cámbialo por tu API Key de Google
-    characterRange: 'Character!A2:Z100',
-    spellsRange: 'Spells!A2:Z100'
+
+const ABILITY_LABELS = {
+  str: 'FUE', dex: 'DES', con: 'CON',
+  int: 'INT', wis: 'SAB', cha: 'CAR'
 };
 
-// Variables globales
-let characterData = window.characterData || {};
-let spellsData = window.spellsData || {};
-
-// Tabla de experiencia
-const XP_TABLE = {
-    1: 0, 2: 1000, 3: 3000, 4: 6000, 5: 10000,
-    6: 15000, 7: 21000, 8: 28000, 9: 36000, 10: 45000,
-    11: 55000, 12: 66000, 13: 78000, 14: 91000, 15: 105000,
-    16: 120000, 17: 136000, 18: 153000, 19: 171000, 20: 190000
+const SAVE_LABELS = {
+  str: 'Fuerza', dex: 'Destreza', con: 'Constitución',
+  int: 'Inteligencia', wis: 'Sabiduría', cha: 'Carisma'
 };
 
-// Mapeo de habilidades a características
+const DEFAULT_SKILLS = [
+  'Acrobacias', 'Arcana', 'Atletismo', 'Engaño', 'Historia',
+  'Interpretación', 'Intimidación', 'Investigación', 'Juego de Manos',
+  'Medicina', 'Naturaleza', 'Percepción', 'Persuasión', 'Religión',
+  'Sigilo', 'Supervivencia', 'Trato con Animales'
+];
+
 const SKILL_ABILITIES = {
-    'Abrir cerraduras': 'dex',
-    'Artesanía': 'int',
-    'Averiguar intenciones': 'wis',
-    'Avistar': 'wis',
-    'Buscar': 'int',
-    'Concentración': 'con',
-    'Conocimiento de conjuros': 'int',
-    'Conocimiento (Arcano)': 'int',
-    'Conocimiento (Historia)': 'int',
-    'Conocimiento (Geografía)': 'int',
-    'Conocimiento (Ingeniería)': 'int',
-    'Conocimiento (Local)': 'int',
-    'Descifrar escritura': 'int',
-    'Diplomacia': 'car',
-    'Disfrazarse': 'car',
-    'Engañar': 'car',
-    'Equilibrio': 'dex',
-    'Escapismo': 'dex',
-    'Esconderse': 'dex',
-    'Escuchar': 'wis',
-    'Falsificar': 'int',
-    'Interpretar': 'car',
-    'Intimidar': 'car',
-    'Inutilizar mecanismo': 'int',
-    'Juego de manos': 'dex',
-    'Montar': 'dex',
-    'Moverse sigilosamente': 'dex',
-    'Nadar': 'str',
-    'Oficio': 'wis',
-    'Oficio (Bibliotecario)': 'wis',
-    'Oficio (Alquimia)': 'wis',
-    'Piruetas': 'dex',
-    'Reunir información': 'car',
-    'Saber': 'int',
-    'Saltar': 'str',
-    'Sanar': 'wis',
-    'Supervivencia': 'wis',
-    'Tasación': 'int',
-    'Trato con animales': 'car',
-    'Trepar': 'str',
-    'Usar objeto mágico': 'car',
-    'Uso de cuerdas': 'dex'
+  'Acrobacias': 'dex', 'Arcana': 'int', 'Atletismo': 'str',
+  'Engaño': 'cha', 'Historia': 'int', 'Interpretación': 'cha',
+  'Intimidación': 'cha', 'Investigación': 'int', 'Juego de Manos': 'dex',
+  'Medicina': 'wis', 'Naturaleza': 'int', 'Percepción': 'wis',
+  'Persuasión': 'cha', 'Religión': 'int', 'Sigilo': 'dex',
+  'Supervivencia': 'wis', 'Trato con Animales': 'wis'
+};
+
+let character = {};
+
+const CHARACTER_JSON = 'data/character.json';
+
+// Repositorio GitHub (se autodetecta en *.github.io)
+const GITHUB_CONFIG = {
+  owner: 'sebastnhr',
+  repo: 'wizard',
+  path: 'data/character.json',
+  branch: 'main'
 };
 
 // ============================================
-// FUNCIONES DE GOOGLE SHEETS
+// CARGA Y GUARDADO — ruta fija del repositorio
 // ============================================
 
-async function loadFromGoogleSheets() {
-    try {
-        showMessage('🔄 Cargando datos de Google Sheets...', 'info');
-        
-        // Cargar datos de personaje
-        const characterUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_CONFIG.spreadsheetId}/values/${SHEET_CONFIG.characterRange}?key=${SHEET_CONFIG.apiKey}`;
-        const characterResponse = await fetch(characterUrl);
-        const characterJson = await characterResponse.json();
-        
-        if (characterJson.values) {
-            parseCharacterData(characterJson.values);
-        }
-        
-        // Cargar datos de hechizos
-        const spellsUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_CONFIG.spreadsheetId}/values/${SHEET_CONFIG.spellsRange}?key=${SHEET_CONFIG.apiKey}`;
-        const spellsResponse = await fetch(spellsUrl);
-        const spellsJson = await spellsResponse.json();
-        
-        if (spellsJson.values) {
-            parseSpellsData(spellsJson.values);
-        }
-        
-        renderAllSections();
-        calculateDependentStats();
-        showMessage('✅ Datos cargados correctamente', 'success');
-    } catch (error) {
-        console.error('Error al cargar de Google Sheets:', error);
-        showMessage('❌ Error al cargar datos. Usando datos locales.', 'error');
-        loadAllData(); // Fallback a localStorage
-    }
+function getGitHubConfig() {
+  const host = location.hostname;
+  if (host.endsWith('.github.io')) {
+    const owner = host.replace('.github.io', '');
+    const repo = location.pathname.split('/').filter(Boolean)[0] || owner;
+    return { ...GITHUB_CONFIG, owner, repo };
+  }
+  return GITHUB_CONFIG;
 }
 
-function parseCharacterData(rows) {
-    // Parsear los datos del sheet Character
-    // Formato esperado: [Campo, Valor]
-    rows.forEach(row => {
-        const [field, value] = row;
-        
-        if (!field) return;
-        
-        switch(field.toLowerCase()) {
-            case 'name':
-                characterData.name = value;
-                break;
-            case 'level':
-                characterData.level = parseInt(value) || 1;
-                break;
-            case 'str':
-                characterData.stats.str = { score: parseInt(value) || 10, mod: Math.floor((parseInt(value) - 10) / 2) };
-                break;
-            case 'dex':
-                characterData.stats.dex = { score: parseInt(value) || 10, mod: Math.floor((parseInt(value) - 10) / 2) };
-                break;
-            case 'con':
-                characterData.stats.con = { score: parseInt(value) || 10, mod: Math.floor((parseInt(value) - 10) / 2) };
-                break;
-            case 'int':
-                characterData.stats.int = { score: parseInt(value) || 10, mod: Math.floor((parseInt(value) - 10) / 2) };
-                break;
-            case 'wis':
-                characterData.stats.wis = { score: parseInt(value) || 10, mod: Math.floor((parseInt(value) - 10) / 2) };
-                break;
-            case 'cha':
-                characterData.stats.cha = { score: parseInt(value) || 10, mod: Math.floor((parseInt(value) - 10) / 2) };
-                break;
-            case 'hp_current':
-                characterData.hp.current = parseInt(value) || 0;
-                break;
-            case 'hp_max':
-                characterData.hp.max = parseInt(value) || 0;
-                break;
-            case 'xp':
-                characterData.experience.current = parseInt(value) || 0;
-                break;
-            case 'gold':
-                characterData.wealth.gold = parseInt(value) || 0;
-                break;
-            // Agregar más campos según tu estructura
-        }
+function getGitHubToken() {
+  let token = localStorage.getItem('github_token');
+  if (!token) {
+    token = prompt(
+      'Introduce tu token de GitHub para guardar automáticamente.\n' +
+      'Necesita permiso "Contents: Read and write" en el repositorio.\n' +
+      'Se guarda solo en tu navegador.'
+    );
+    if (token) localStorage.setItem('github_token', token);
+  }
+  return token;
+}
+
+function toBase64Utf8(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+async function updateCharacterJsonFile(json) {
+  const cfg = getGitHubConfig();
+  const token = getGitHubToken();
+  if (!token) throw new Error('Se necesita un token de GitHub para guardar');
+
+  const apiUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path}`;
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+
+  let sha = null;
+  const getRes = await fetch(`${apiUrl}?ref=${cfg.branch}`, { headers });
+  if (getRes.ok) {
+    sha = (await getRes.json()).sha;
+  } else if (getRes.status !== 404) {
+    if (getRes.status === 401) localStorage.removeItem('github_token');
+    const err = await getRes.json().catch(() => ({}));
+    throw new Error(err.message || 'No se pudo leer el archivo en GitHub');
+  }
+
+  const putRes = await fetch(apiUrl, {
+    method: 'PUT',
+    headers: { ...headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: 'Actualizar ficha de personaje',
+      content: toBase64Utf8(json),
+      sha,
+      branch: cfg.branch
+    })
+  });
+
+  if (!putRes.ok) {
+    if (putRes.status === 401) localStorage.removeItem('github_token');
+    const err = await putRes.json().catch(() => ({}));
+    throw new Error(err.message || 'Error al guardar en GitHub');
+  }
+}
+
+async function loadCharacter() {
+  try {
+    const res = await fetch(CHARACTER_JSON + '?t=' + Date.now());
+    if (!res.ok) throw new Error();
+    character = await res.json();
+  } catch {
+    character = getDefaultCharacter();
+    showStatus('No se pudo cargar ' + CHARACTER_JSON, 'error');
+  }
+  renderAll();
+}
+
+async function saveGrimorio() {
+  const datos = collectCharacter();
+  const json = JSON.stringify(datos, null, 2);
+  character = datos;
+
+  try {
+    const res = await fetch('/api/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: json
     });
+    if (res.ok) {
+      showStatus('Guardado en ' + CHARACTER_JSON, 'success');
+      return;
+    }
+  } catch { /* sin servidor local */ }
+
+  try {
+    await updateCharacterJsonFile(json);
+    showStatus('Guardado en ' + CHARACTER_JSON, 'success');
+  } catch (e) {
+    showStatus(e.message || 'Error al guardar', 'error');
+  }
 }
 
-function parseSpellsData(rows) {
-    // Parsear los datos del sheet Spells
-    // Formato esperado: [Nivel, Nombre, Escuela, Preparado]
-    spellsData.spellbook.forEach(level => level.spells = []);
-    
-    rows.forEach(row => {
-        const [level, name, school, prepared] = row;
-        
-        if (!name) return;
-        
-        const spellLevel = parseInt(level) || 0;
-        const levelIndex = spellsData.spellbook.findIndex(l => l.level === spellLevel);
-        
-        if (levelIndex !== -1) {
-            spellsData.spellbook[levelIndex].spells.push({
-                name: name,
-                school: school || '',
-                prepared: prepared === 'TRUE' || prepared === 'Sí'
-            });
-        }
+function collectCharacter() {
+  character.name = val('charName');
+  character.player = val('playerName');
+  character.class = val('charClass');
+  character.race = val('charRace');
+  character.background = val('charBackground');
+  character.alignment = val('charAlignment');
+  character.experience = num('charXP');
+  character.inspiration = document.getElementById('inspiration').checked;
+  character.proficiencyBonus = num('profBonus');
+
+  ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(ab => {
+    const score = num('ability_' + ab);
+    character.stats[ab] = { score, mod: calcMod(score) };
+  });
+
+  ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(ab => {
+    if (!character.savingThrows[ab]) character.savingThrows[ab] = {};
+    character.savingThrows[ab].proficient = document.getElementById('save_' + ab).checked;
+    character.savingThrows[ab].bonus = num('saveBonus_' + ab);
+  });
+
+  character.combat.ac = num('ac');
+  character.combat.initiative = val('initiative');
+  character.combat.speed = val('speed');
+  character.combat.hp.max = num('hpMax');
+  character.combat.hp.current = num('hpCurrent');
+  character.combat.hp.temp = num('hpTemp');
+  character.combat.hitDice = val('hitDice');
+
+  character.features = val('features');
+  character.spellcasting.ability = val('spellAbility');
+  character.spellcasting.sorceryPoints.current = num('sorceryCurrent');
+  character.spellcasting.sorceryPoints.max = num('sorceryMax');
+  character.spellcasting.origin = val('sorcererOrigin');
+
+  character.traits.personality = val('traitPersonality');
+  character.traits.ideals = val('traitIdeals');
+  character.traits.bonds = val('traitBonds');
+  character.traits.flaws = val('traitFlaws');
+  character.appearance.age = val('appAge');
+  character.appearance.height = val('appHeight');
+  character.appearance.weight = val('appWeight');
+  character.appearance.eyes = val('appEyes');
+  character.appearance.skin = val('appSkin');
+  character.appearance.hair = val('appHair');
+  character.backstory = val('backstory');
+  character.allies = val('allies');
+  character.treasure = val('treasure');
+  character.equipment = val('equipment');
+  character.proficiencies = val('proficiencies');
+  character.wealth.cp = num('coinCP');
+  character.wealth.sp = num('coinSP');
+  character.wealth.ep = num('coinEP');
+  character.wealth.gp = num('coinGP');
+  character.wealth.pp = num('coinPP');
+
+  collectSkills();
+  collectAttacks();
+  collectCantrips();
+  collectSpells();
+  collectMetamagic();
+  collectSlots();
+
+  calculateSpellStats();
+  return character;
+}
+
+// ============================================
+// UTILIDADES
+// ============================================
+
+function val(id) { return document.getElementById(id)?.value ?? ''; }
+function num(id) { return parseInt(document.getElementById(id)?.value) || 0; }
+function calcMod(score) { return Math.floor((score - 10) / 2); }
+function fmtMod(n) { return (n >= 0 ? '+' : '') + n; }
+
+function showStatus(msg, type) {
+  const el = document.getElementById('saveStatus');
+  el.textContent = msg;
+  el.className = 'save-status ' + (type || '');
+  setTimeout(() => { el.textContent = ''; el.className = 'save-status'; }, 4000);
+}
+
+function getDefaultCharacter() {
+  return {
+    name: '', player: '', class: 'Hechicero', level: 1, race: '', background: '',
+    alignment: '', experience: 0, inspiration: false, proficiencyBonus: 2,
+    stats: Object.fromEntries(['str','dex','con','int','wis','cha'].map(a => [a, {score:10, mod:0}])),
+    savingThrows: Object.fromEntries(['str','dex','con','int','wis','cha'].map(a => [a, {proficient:false, bonus:0}])),
+    skills: [], combat: { ac:10, initiative:0, speed:'30 pies', hp:{current:8,max:8,temp:0}, hitDice:'1d6', deathSaves:{successes:0,failures:0} },
+    attacks: [], spellcasting: {
+      ability:'cha', saveDC:8, attackBonus:0,
+      sorceryPoints:{current:0,max:0}, origin:'',
+      slots: Object.fromEntries([1,2,3,4,5,6,7,8,9].map(l => [l, {total:0, used:0}])),
+      cantrips: [], spells: Object.fromEntries([1,2,3,4,5,6,7,8,9].map(l => [l, []]))
+    },
+    metamagic: [], features:'', traits:{personality:'',ideals:'',bonds:'',flaws:''},
+    appearance:{age:'',height:'',weight:'',eyes:'',skin:'',hair:''},
+    backstory:'', allies:'', treasure:'', equipment:'', proficiencies:'',
+    wealth:{cp:0,sp:0,ep:0,gp:0,pp:0}
+  };
+}
+
+// ============================================
+// CÁLCULOS
+// ============================================
+
+function calculateSpellStats() {
+  const ab = character.spellcasting.ability || 'cha';
+  const mod = character.stats[ab]?.mod ?? 0;
+  const prof = character.proficiencyBonus || 2;
+  const dc = 8 + prof + mod;
+  const attack = prof + mod;
+  character.spellcasting.saveDC = dc;
+  character.spellcasting.attackBonus = attack;
+  setVal('spellSaveDC', dc);
+  setVal('spellAttackBonus', fmtMod(attack));
+}
+
+function updateHPBar() {
+  const current = num('hpCurrent');
+  const max = num('hpMax') || 1;
+  const pct = Math.min(100, Math.max(0, (current / max) * 100));
+  document.getElementById('hpFill').style.width = pct + '%';
+}
+
+function updatePassivePerception() {
+  const wisMod = character.stats?.wis?.mod ?? 0;
+  const prof = character.proficiencyBonus || 2;
+  const skill = character.skills?.find(s => s.name === 'Percepción');
+  let total = 10 + wisMod;
+  if (skill?.proficient) total += prof;
+  if (skill?.expertise) total += prof;
+  total += skill?.bonus || 0;
+  document.getElementById('passivePerception').textContent = total;
+}
+
+function setVal(id, v) {
+  const el = document.getElementById(id);
+  if (el) el.value = v;
+}
+
+// ============================================
+// RENDERIZADO
+// ============================================
+
+function renderAll() {
+  populateFields();
+  renderAbilities();
+  renderSaves();
+  renderSkills();
+  renderAttacks();
+  renderCantrips();
+  renderSlots();
+  renderSpells();
+  renderMetamagic();
+  renderDeathSaves();
+  calculateSpellStats();
+  updateHPBar();
+  updatePassivePerception();
+}
+
+function populateFields() {
+  setVal('charName', character.name);
+  setVal('playerName', character.player);
+  setVal('charClass', character.class + (character.level ? ' ' + character.level : ''));
+  setVal('charRace', character.race);
+  setVal('charBackground', character.background);
+  setVal('charAlignment', character.alignment);
+  setVal('charXP', character.experience);
+  document.getElementById('inspiration').checked = character.inspiration;
+  setVal('profBonus', character.proficiencyBonus);
+  setVal('ac', character.combat?.ac);
+  setVal('initiative', character.combat?.initiative);
+  setVal('speed', character.combat?.speed);
+  setVal('hpMax', character.combat?.hp?.max);
+  setVal('hpCurrent', character.combat?.hp?.current);
+  setVal('hpTemp', character.combat?.hp?.temp);
+  setVal('hitDice', character.combat?.hitDice);
+  setVal('features', character.features);
+  setVal('spellAbility', character.spellcasting?.ability || 'cha');
+  setVal('sorceryCurrent', character.spellcasting?.sorceryPoints?.current);
+  setVal('sorceryMax', character.spellcasting?.sorceryPoints?.max);
+  setVal('sorcererOrigin', character.spellcasting?.origin);
+  setVal('traitPersonality', character.traits?.personality);
+  setVal('traitIdeals', character.traits?.ideals);
+  setVal('traitBonds', character.traits?.bonds);
+  setVal('traitFlaws', character.traits?.flaws);
+  setVal('appAge', character.appearance?.age);
+  setVal('appHeight', character.appearance?.height);
+  setVal('appWeight', character.appearance?.weight);
+  setVal('appEyes', character.appearance?.eyes);
+  setVal('appSkin', character.appearance?.skin);
+  setVal('appHair', character.appearance?.hair);
+  setVal('backstory', character.backstory);
+  setVal('allies', character.allies);
+  setVal('treasure', character.treasure);
+  setVal('equipment', character.equipment);
+  setVal('proficiencies', character.proficiencies);
+  setVal('coinCP', character.wealth?.cp);
+  setVal('coinSP', character.wealth?.sp);
+  setVal('coinEP', character.wealth?.ep);
+  setVal('coinGP', character.wealth?.gp);
+  setVal('coinPP', character.wealth?.pp);
+}
+
+function renderAbilities() {
+  const grid = document.getElementById('abilitiesGrid');
+  grid.innerHTML = ['str','dex','con','int','wis','cha'].map(ab => {
+    const s = character.stats[ab] || { score: 10, mod: 0 };
+    return `<div class="ability-box">
+      <div class="ability-name">${ABILITY_LABELS[ab]}</div>
+      <div class="ability-score"><input type="number" id="ability_${ab}" value="${s.score}" min="1" max="30"></div>
+      <div class="ability-mod" id="mod_${ab}">${fmtMod(s.mod)}</div>
+    </div>`;
+  }).join('');
+
+  ['str','dex','con','int','wis','cha'].forEach(ab => {
+    document.getElementById('ability_' + ab).addEventListener('input', () => {
+      const score = num('ability_' + ab);
+      character.stats[ab] = { score, mod: calcMod(score) };
+      document.getElementById('mod_' + ab).textContent = fmtMod(calcMod(score));
+      renderSaves();
+      renderSkills();
+      calculateSpellStats();
+      updatePassivePerception();
     });
-}
-
-async function saveToGoogleSheets() {
-    try {
-        showMessage('🔄 Guardando en Google Sheets...', 'info');
-        
-        // Preparar datos de personaje para el formato de sheets
-        const characterRows = [
-            ['name', characterData.name],
-            ['level', characterData.level],
-            ['str', characterData.stats.str.score],
-            ['dex', characterData.stats.dex.score],
-            ['con', characterData.stats.con.score],
-            ['int', characterData.stats.int.score],
-            ['wis', characterData.stats.wis.score],
-            ['cha', characterData.stats.cha.score],
-            ['hp_current', characterData.hp.current],
-            ['hp_max', characterData.hp.max],
-            ['xp', characterData.experience.current],
-            ['gold', characterData.wealth.gold]
-            // Agregar más campos según necesites
-        ];
-        
-        // Preparar datos de hechizos
-        const spellRows = [];
-        spellsData.spellbook.forEach(level => {
-            level.spells.forEach(spell => {
-                spellRows.push([
-                    level.level,
-                    spell.name,
-                    spell.school,
-                    spell.prepared ? 'TRUE' : 'FALSE'
-                ]);
-            });
-        });
-        
-        // NOTA: Para escribir en Google Sheets necesitas usar OAuth2
-        // Este ejemplo requiere configuración adicional
-        alert('Para guardar en Google Sheets necesitas configurar OAuth2. Por ahora se guardará localmente.');
-        
-        saveAllData(); // Fallback a localStorage
-        
-    } catch (error) {
-        console.error('Error al guardar en Google Sheets:', error);
-        showMessage('❌ Error al guardar. Guardando localmente.', 'error');
-        saveAllData();
-    }
-}
-
-// ============================================
-// FUNCIONES ORIGINALES (con soporte mixto)
-// ============================================
-
-function init() {
-    // Intentar cargar de Google Sheets primero
-    if (SHEET_CONFIG.spreadsheetId !== 'TU_ID_DE_HOJA_AQUI' && 
-        SHEET_CONFIG.apiKey !== 'TU_API_KEY_AQUI') {
-        loadFromGoogleSheets();
-    } else {
-        // Usar localStorage si no hay configuración de Sheets
-        loadAllData();
-        renderAllSections();
-        calculateDependentStats();
-    }
-}
-
-function loadAllData() {
-    const saved = localStorage.getItem('wizardData');
-    if (saved) {
-        const data = JSON.parse(saved);
-        characterData = data.character || window.characterData;
-        spellsData = data.spells || window.spellsData;
-    }
-    
-    // Inicializar modificadores si no existen
-    if (!characterData.combatMods) {
-        characterData.combatMods = { baseAttack: 0, ac: 0, initiative: 0 };
-    }
-    if (!characterData.saveMods) {
-        characterData.saveMods = { fort: 0, ref: 0, will: 0 };
-    }
-}
-
-function saveAllData() {
-    collectAllData();
-    
-    const dataToSave = {
-        character: characterData,
-        spells: spellsData
-    };
-    localStorage.setItem('wizardData', JSON.stringify(dataToSave));
-    
-    // Generar archivo JS de respaldo
-    const jsContent = `// DATOS DEL PERSONAJE - Generado automáticamente
-window.characterData = ${JSON.stringify(characterData, null, 2)};
-
-window.spellsData = ${JSON.stringify(spellsData, null, 2)};`;
-
-    const blob = new Blob([jsContent], { type: 'text/javascript' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'character-data.js';
-    a.click();
-    URL.revokeObjectURL(url);
-    
-    showMessage('✅ Datos guardados localmente y archivo descargado', 'success');
-}
-
-function showMessage(msg, type = 'success') {
-    const msgEl = document.getElementById('saveMessage');
-    msgEl.textContent = msg;
-    msgEl.className = `save-message ${type}`;
-    msgEl.style.display = 'block';
-    setTimeout(() => {
-        msgEl.style.display = 'none';
-    }, 5000);
-}
-
-// ============================================
-// RESTO DE FUNCIONES ORIGINALES
-// ============================================
-// [Incluir todas las demás funciones del app.js original aquí]
-
-function calculateLevel() {
-    const xp = parseInt(document.getElementById('currentXP').value) || 0;
-    let level = 1;
-    
-    for (let lvl = 20; lvl >= 1; lvl--) {
-        if (xp >= XP_TABLE[lvl]) {
-            level = lvl;
-            break;
-        }
-    }
-    
-    characterData.level = level;
-    characterData.experience = {
-        current: xp,
-        nextLevel: XP_TABLE[level + 1] || 190000
-    };
-    
-    document.getElementById('currentLevel').value = level;
-    document.getElementById('nextLevelXP').value = characterData.experience.nextLevel;
-    document.getElementById('charLevelDisplay').textContent = level;
-    
-    calculateDependentStats();
-    updateQuickStats();
-}
-
-function calculateDependentStats() {
-    ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
-        const scoreInput = document.getElementById(`${stat}Score`);
-        if (scoreInput) {
-            const score = parseInt(scoreInput.value || 10);
-            const mod = Math.floor((score - 10) / 2);
-            characterData.stats[stat] = { score, mod };
-            const modDisplay = document.getElementById(`${stat}Mod`);
-            if (modDisplay) {
-                modDisplay.textContent = `${mod >= 0 ? '+' : ''}${mod}`;
-            }
-        }
-    });
-
-    const level = characterData.level || 1;
-    characterData.baseAttack = Math.floor(level / 2);
-    
-    const dexMod = characterData.stats?.dex?.mod || 0;
-    characterData.ac = 10 + dexMod;
-    characterData.initiative = dexMod;
-
-    const conMod = characterData.stats?.con?.mod || 0;
-    const wisMod = characterData.stats?.wis?.mod || 0;
-    
-    const fortBase = Math.floor(level / 3);
-    const refBase = Math.floor(level / 3);
-    const willBase = 2 + Math.floor(level / 2);
-    
-    characterData.saves = {
-        fort: fortBase + conMod,
-        ref: refBase + dexMod,
-        will: willBase + wisMod
-    };
-
-    calculateCombatStats();
-}
-
-function calculateCombatStats() {
-    const baseAttackMod = parseInt(document.getElementById('baseAttackMod')?.value || 0);
-    const acMod = parseInt(document.getElementById('acMod')?.value || 0);
-    const initiativeMod = parseInt(document.getElementById('initiativeMod')?.value || 0);
-    
-    characterData.combatMods = { baseAttack: baseAttackMod, ac: acMod, initiative: initiativeMod };
-    
-    if (document.getElementById('baseAttack')) {
-        document.getElementById('baseAttack').value = characterData.baseAttack;
-    }
-    if (document.getElementById('ac')) {
-        document.getElementById('ac').value = characterData.ac;
-    }
-    if (document.getElementById('initiative')) {
-        document.getElementById('initiative').value = characterData.initiative;
-    }
-    
-    const fortMod = parseInt(document.getElementById('fortMod')?.value || 0);
-    const refMod = parseInt(document.getElementById('refMod')?.value || 0);
-    const willMod = parseInt(document.getElementById('willMod')?.value || 0);
-    
-    characterData.saveMods = { fort: fortMod, ref: refMod, will: willMod };
-    
-    if (document.getElementById('fortSave')) {
-        document.getElementById('fortSave').value = characterData.saves.fort;
-    }
-    if (document.getElementById('refSave')) {
-        document.getElementById('refSave').value = characterData.saves.ref;
-    }
-    if (document.getElementById('willSave')) {
-        document.getElementById('willSave').value = characterData.saves.will;
-    }
-    
-    updateQuickStats();
-}
-
-function collectAllData() {
-    ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(stat => {
-        const score = parseInt(document.getElementById(`${stat}Score`)?.value || 10);
-        const mod = Math.floor((score - 10) / 2);
-        characterData.stats[stat] = { score, mod };
-    });
-
-    characterData.hp.current = parseInt(document.getElementById('hpCurrent')?.value || 0);
-    characterData.hp.max = parseInt(document.getElementById('hpMax')?.value || 0);
-    characterData.speed = document.getElementById('speed')?.value || "30'";
-    characterData.spellResistance = parseInt(document.getElementById('spellResistance')?.value || 0);
-    characterData.damageReduction = document.getElementById('damageReduction')?.value || "0";
-
-    const xp = parseInt(document.getElementById('currentXP')?.value || 0);
-    characterData.experience = {
-        current: xp,
-        nextLevel: characterData.experience?.nextLevel || 0
-    };
-
-    characterData.specialization = document.getElementById('specialization')?.value || "";
-    const prohibited = document.getElementById('prohibitedSchools')?.value || "";
-    characterData.prohibitedSchools = prohibited.split(',').map(s => s.trim()).filter(s => s);
-
-    const langs = document.getElementById('languages')?.value || "";
-    characterData.languages = langs.split(',').map(s => s.trim()).filter(s => s);
-
-    characterData.wealth = {
-        gold: parseInt(document.getElementById('gold')?.value || 0),
-        silver: parseInt(document.getElementById('silver')?.value || 0),
-        copper: parseInt(document.getElementById('copper')?.value || 0),
-        platinum: parseInt(document.getElementById('platinum')?.value || 0),
-        treasures: document.getElementById('treasures')?.value || ""
-    };
-}
-
-function renderAllSections() {
-    renderStats();
-    renderSaves();
-    renderCombat();
-    renderSkills();
-    renderSpells();
-    renderFeats();
-    renderEquipment();
-    renderLanguages();
-    renderWealth();
-    updateQuickStats();
-}
-
-function renderStats() {
-    const container = document.getElementById('statsContainer');
-    const stats = characterData.stats || {};
-    
-    container.innerHTML = Object.entries(stats).map(([key, value]) => `
-        <div class="stat-row">
-            <span class="stat-name">${key.toUpperCase()}</span>
-            <div class="stat-values">
-                <input type="number" class="input" id="${key}Score" value="${value.score}" onchange="updateStatMod('${key}')">
-                <span class="stat-mod" id="${key}Mod">${value.mod >= 0 ? '+' : ''}${value.mod}</span>
-            </div>
-        </div>
-    `).join('');
-}
-
-function updateStatMod(stat) {
-    const score = parseInt(document.getElementById(`${stat}Score`).value);
-    const mod = Math.floor((score - 10) / 2);
-    document.getElementById(`${stat}Mod`).textContent = `${mod >= 0 ? '+' : ''}${mod}`;
-    calculateDependentStats();
-    updateQuickStats();
-    renderSkills();
+  });
 }
 
 function renderSaves() {
-    const container = document.getElementById('savesContainer');
-    const saves = characterData.saves || {};
-    const saveMods = characterData.saveMods || { fort: 0, ref: 0, will: 0 };
-    
-    container.innerHTML = `
-        <div class="stat-row">
-            <span class="stat-name">Fortaleza</span>
-            <div class="save-row">
-                <input type="number" class="input" id="fortSave" value="${saves.fort || 0}" readonly style="cursor: not-allowed; opacity: 0.7; width: 70px;">
-                <span style="color: #5eead4;">+</span>
-                <input type="number" class="input" id="fortMod" value="${saveMods.fort || 0}" placeholder="Mod" style="width: 70px;" onchange="calculateCombatStats()">
-                <span class="stat-score" style="font-size: 1.2rem;">= ${(saves.fort || 0) + (saveMods.fort || 0)}</span>
-            </div>
-        </div>
-        <div class="stat-row">
-            <span class="stat-name">Reflejos</span>
-            <div class="save-row">
-                <input type="number" class="input" id="refSave" value="${saves.ref || 0}" readonly style="cursor: not-allowed; opacity: 0.7; width: 70px;">
-                <span style="color: #5eead4;">+</span>
-                <input type="number" class="input" id="refMod" value="${saveMods.ref || 0}" placeholder="Mod" style="width: 70px;" onchange="calculateCombatStats()">
-                <span class="stat-score" style="font-size: 1.2rem;">= ${(saves.ref || 0) + (saveMods.ref || 0)}</span>
-            </div>
-        </div>
-        <div class="stat-row">
-            <span class="stat-name">Voluntad</span>
-            <div class="save-row">
-                <input type="number" class="input" id="willSave" value="${saves.will || 0}" readonly style="cursor: not-allowed; opacity: 0.7; width: 70px;">
-                <span style="color: #5eead4;">+</span>
-                <input type="number" class="input" id="willMod" value="${saveMods.will || 0}" placeholder="Mod" style="width: 70px;" onchange="calculateCombatStats()">
-                <span class="stat-score" style="font-size: 1.2rem;">= ${(saves.will || 0) + (saveMods.will || 0)}</span>
-            </div>
-        </div>
-    `;
-    
-    document.getElementById('specialization').value = characterData.specialization || "";
-    document.getElementById('prohibitedSchools').value = (characterData.prohibitedSchools || []).join(', ');
-}
+  const container = document.getElementById('savesContainer');
+  const prof = character.proficiencyBonus || 2;
+  container.innerHTML = ['str','dex','con','int','wis','cha'].map(ab => {
+    const save = character.savingThrows[ab] || { proficient: false, bonus: 0 };
+    const mod = character.stats[ab]?.mod ?? 0;
+    const total = mod + (save.proficient ? prof : 0) + (save.bonus || 0);
+    return `<div class="save-row">
+      <input type="checkbox" id="save_${ab}" ${save.proficient ? 'checked' : ''}>
+      <span class="save-name">${SAVE_LABELS[ab]}</span>
+      <input type="number" class="skill-bonus" id="saveBonus_${ab}" value="${save.bonus || 0}" title="Bonificador extra">
+      <span class="save-total">${fmtMod(total)}</span>
+    </div>`;
+  }).join('');
 
-function renderCombat() {
-    const combatMods = characterData.combatMods || { baseAttack: 0, ac: 0, initiative: 0 };
-    
-    document.getElementById('baseAttack').value = characterData.baseAttack || 0;
-    document.getElementById('baseAttackMod').value = combatMods.baseAttack || 0;
-    document.getElementById('ac').value = characterData.ac || 10;
-    document.getElementById('acMod').value = combatMods.ac || 0;
-    document.getElementById('initiative').value = characterData.initiative || 0;
-    document.getElementById('initiativeMod').value = combatMods.initiative || 0;
-    document.getElementById('speed').value = characterData.speed || "30'";
-    document.getElementById('spellResistance').value = characterData.spellResistance || 0;
-    document.getElementById('damageReduction').value = characterData.damageReduction || "0";
-    document.getElementById('currentXP').value = characterData.experience?.current || 0;
-    document.getElementById('currentLevel').value = characterData.level || 1;
-    document.getElementById('nextLevelXP').value = characterData.experience?.nextLevel || 0;
-}
-
-function getAbilityMod(skillName) {
-    const abilityKey = SKILL_ABILITIES[skillName] || 'int';
-    return characterData.stats?.[abilityKey]?.mod || 0;
+  ['str','dex','con','int','wis','cha'].forEach(ab => {
+    document.getElementById('save_' + ab).addEventListener('change', renderSaves);
+    document.getElementById('saveBonus_' + ab).addEventListener('input', renderSaves);
+  });
 }
 
 function renderSkills() {
-    const container = document.getElementById('skillsContainer');
-    const skills = characterData.skills || [];
-    
-    container.innerHTML = skills.map((skill, index) => {
-        const abilityMod = getAbilityMod(skill.name);
-        const total = (skill.ranks || 0) + abilityMod + (skill.misc || 0);
-        
-        return `
-            <div class="item-row">
-                <div style="flex: 1;">
-                    <input type="text" class="input input-wide" value="${skill.name || ''}" 
-                           onchange="characterData.skills[${index}].name = this.value; renderSkills();" 
-                           placeholder="Nombre de habilidad" style="margin-bottom: 8px;">
-                    <div class="skill-inputs">
-                        <div>
-                            <label style="color: #5eead4; font-size: 0.85rem; display: block; margin-bottom: 3px;">Rangos</label>
-                            <input type="number" class="input" value="${skill.ranks || 0}" 
-                                   onchange="characterData.skills[${index}].ranks = parseInt(this.value); renderSkills()" 
-                                   style="width: 70px;">
-                        </div>
-                        <div>
-                            <label style="color: #5eead4; font-size: 0.85rem; display: block; margin-bottom: 3px;">Mod Hab</label>
-                            <input type="number" class="input" value="${abilityMod}" 
-                                   readonly style="cursor: not-allowed; opacity: 0.7; width: 70px;">
-                        </div>
-                        <div>
-                            <label style="color: #5eead4; font-size: 0.85rem; display: block; margin-bottom: 3px;">Varios</label>
-                            <input type="number" class="input" value="${skill.misc || 0}" 
-                                   onchange="characterData.skills[${index}].misc = parseInt(this.value); renderSkills()" 
-                                   style="width: 70px;">
-                        </div>
-                        <div>
-                            <label style="color: #5eead4; font-size: 0.85rem; display: block; margin-bottom: 3px;">Total</label>
-                            <span class="stat-score" style="display: inline-block; padding: 8px 12px; min-width: 60px; text-align: center;">
-                                ${total >= 0 ? '+' : ''}${total}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <button class="btn btn-secondary btn-small" onclick="removeSkill(${index})">✖</button>
-            </div>
-        `;
-    }).join('');
+  const container = document.getElementById('skillsContainer');
+  const prof = character.proficiencyBonus || 2;
+  if (!character.skills?.length) {
+    character.skills = [
+      { name: 'Arcana', ability: 'int', proficient: false, expertise: false, bonus: 0 },
+      { name: 'Percepción', ability: 'wis', proficient: false, expertise: false, bonus: 0 }
+    ];
+  }
+  container.innerHTML = character.skills.map((sk, i) => {
+    const ab = sk.ability || SKILL_ABILITIES[sk.name] || 'int';
+    const mod = character.stats[ab]?.mod ?? 0;
+    let total = mod + (sk.bonus || 0);
+    if (sk.proficient) total += prof;
+    if (sk.expertise) total += prof;
+    return `<div class="skill-row" data-index="${i}">
+      <input type="checkbox" class="skill-prof" ${sk.proficient ? 'checked' : ''} title="Competencia">
+      <input type="checkbox" class="skill-exp" ${sk.expertise ? 'checked' : ''} title="Experiencia">
+      <input type="text" class="skill-name-input" value="${esc(sk.name)}">
+      <input type="number" class="skill-bonus" value="${sk.bonus || 0}">
+      <span class="skill-total">${fmtMod(total)}</span>
+      <button class="btn-remove skill-remove">✕</button>
+    </div>`;
+  }).join('');
+
+  container.querySelectorAll('.skill-row').forEach(row => {
+    const i = parseInt(row.dataset.index);
+    row.querySelector('.skill-prof').addEventListener('change', e => {
+      character.skills[i].proficient = e.target.checked;
+      renderSkills();
+      updatePassivePerception();
+    });
+    row.querySelector('.skill-exp').addEventListener('change', e => {
+      character.skills[i].expertise = e.target.checked;
+      renderSkills();
+    });
+    row.querySelector('.skill-name-input').addEventListener('input', e => {
+      character.skills[i].name = e.target.value;
+      character.skills[i].ability = SKILL_ABILITIES[e.target.value] || 'int';
+    });
+    row.querySelector('.skill-bonus').addEventListener('input', e => {
+      character.skills[i].bonus = parseInt(e.target.value) || 0;
+      renderSkills();
+      updatePassivePerception();
+    });
+    row.querySelector('.skill-remove').addEventListener('click', () => {
+      character.skills.splice(i, 1);
+      renderSkills();
+      updatePassivePerception();
+    });
+  });
 }
 
-function addSkill() {
-    if (!characterData.skills) characterData.skills = [];
-    characterData.skills.push({ name: "", ranks: 0, misc: 0 });
-    renderSkills();
+function collectSkills() {
+  document.querySelectorAll('.skill-row').forEach((row, i) => {
+    if (!character.skills[i]) return;
+    character.skills[i].name = row.querySelector('.skill-name-input').value;
+    character.skills[i].proficient = row.querySelector('.skill-prof').checked;
+    character.skills[i].expertise = row.querySelector('.skill-exp').checked;
+    character.skills[i].bonus = parseInt(row.querySelector('.skill-bonus').value) || 0;
+  });
 }
 
-function removeSkill(index) {
-    characterData.skills.splice(index, 1);
-    renderSkills();
+function renderAttacks() {
+  const container = document.getElementById('attacksContainer');
+  if (!character.attacks) character.attacks = [];
+  container.innerHTML = character.attacks.map((atk, i) => `
+    <div class="attack-row" data-index="${i}">
+      <input type="text" class="atk-name" value="${esc(atk.name)}">
+      <input type="text" class="atk-bonus" value="${esc(atk.bonus)}">
+      <input type="text" class="atk-damage" value="${esc(atk.damage)}">
+      <button class="btn-remove atk-remove">✕</button>
+    </div>
+  `).join('');
+
+  container.querySelectorAll('.atk-remove').forEach((btn, i) => {
+    btn.addEventListener('click', () => {
+      character.attacks.splice(i, 1);
+      renderAttacks();
+    });
+  });
+}
+
+function collectAttacks() {
+  character.attacks = [];
+  document.querySelectorAll('.attack-row').forEach(row => {
+    character.attacks.push({
+      name: row.querySelector('.atk-name').value,
+      bonus: row.querySelector('.atk-bonus').value,
+      damage: row.querySelector('.atk-damage').value
+    });
+  });
+}
+
+function renderCantrips() {
+  const container = document.getElementById('cantripsContainer');
+  const cantrips = character.spellcasting?.cantrips || [];
+  container.innerHTML = cantrips.map((c, i) => `
+    <div class="cantrip-item" data-index="${i}">
+      <input type="text" class="cantrip-name" value="${esc(c.name)}" placeholder="Nombre del truco">
+      <button class="btn-remove cantrip-remove">✕</button>
+    </div>
+  `).join('');
+
+  container.querySelectorAll('.cantrip-remove').forEach((btn, i) => {
+    btn.addEventListener('click', () => {
+      character.spellcasting.cantrips.splice(i, 1);
+      renderCantrips();
+    });
+  });
+}
+
+function collectCantrips() {
+  character.spellcasting.cantrips = [];
+  document.querySelectorAll('.cantrip-item').forEach(row => {
+    character.spellcasting.cantrips.push({ name: row.querySelector('.cantrip-name').value, notes: '' });
+  });
+}
+
+function renderSlots() {
+  const grid = document.getElementById('slotsGrid');
+  const slots = character.spellcasting?.slots || {};
+  grid.innerHTML = [1,2,3,4,5,6,7,8,9].map(lvl => {
+    const s = slots[lvl] || { total: 0, used: 0 };
+    return `<div class="slot-box">
+      <div class="slot-level">Nivel ${lvl}</div>
+      <div class="slot-inputs">
+        <input type="number" class="slot-used" data-level="${lvl}" value="${s.used}" min="0" title="Gastados">
+        <span>/</span>
+        <input type="number" class="slot-total" data-level="${lvl}" value="${s.total}" min="0" title="Total">
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function collectSlots() {
+  document.querySelectorAll('.slot-box').forEach(box => {
+    const lvl = box.querySelector('.slot-used').dataset.level;
+    character.spellcasting.slots[lvl] = {
+      used: parseInt(box.querySelector('.slot-used').value) || 0,
+      total: parseInt(box.querySelector('.slot-total').value) || 0
+    };
+  });
 }
 
 function renderSpells() {
-    const container = document.getElementById('spellsContainer');
-    const spellbook = spellsData.spellbook || [];
-    
-    container.innerHTML = spellbook.map((level, levelIndex) => `
-        <div class="spell-level">
-            <div class="spell-level-header">
-                <h3 class="spell-level-title">Nivel ${level.level}</h3>
-                <button class="btn btn-secondary btn-small" onclick="addSpell(${levelIndex})">+ Agregar Hechizo</button>
-            </div>
-            ${(level.spells || []).map((spell, spellIndex) => `
-                <div class="spell-item ${spell.prepared ? 'prepared' : ''}">
-                    <input type="checkbox" class="spell-checkbox" ${spell.prepared ? 'checked' : ''} 
-                           onchange="toggleSpell(${levelIndex}, ${spellIndex})">
-                    <div class="spell-info">
-                        <input type="text" class="input input-wide" value="${spell.name || ''}" 
-                               onchange="spellsData.spellbook[${levelIndex}].spells[${spellIndex}].name = this.value" 
-                               placeholder="Nombre del hechizo" style="margin-bottom: 5px;">
-                        <input type="text" class="input input-wide" value="${spell.school || ''}" 
-                               onchange="spellsData.spellbook[${levelIndex}].spells[${spellIndex}].school = this.value" 
-                               placeholder="Escuela">
-                    </div>
-                    <div class="spell-actions">
-                        ${spell.prepared ? '<span style="color: #10b981; font-size: 1.5rem;">✨</span>' : ''}
-                        <button class="btn btn-secondary btn-small" onclick="removeSpell(${levelIndex}, ${spellIndex})">✖</button>
-                    </div>
-                </div>
-            `).join('')}
-        </div>
+  const container = document.getElementById('spellsByLevel');
+  const spells = character.spellcasting?.spells || {};
+  container.innerHTML = [1,2,3,4,5,6,7,8,9].map(lvl => {
+    const list = spells[lvl] || spells[String(lvl)] || [];
+    const items = list.map((sp, i) => `
+      <div class="spell-item ${sp.prepared ? 'known' : ''}" data-level="${lvl}" data-index="${i}">
+        <input type="checkbox" class="spell-check" ${sp.prepared ? 'checked' : ''} title="Conocido/Preparado">
+        <input type="text" class="spell-name-input" value="${esc(sp.name)}">
+        <button class="btn-remove spell-remove">✕</button>
+      </div>
     `).join('');
-}
+    return `<div class="parchment-card spell-level-section">
+      <div class="spell-level-header">
+        <span class="spell-level-title">Hechizos de Nivel ${lvl}</span>
+        <button class="btn btn-add btn-add-spell" data-level="${lvl}">+ Añadir</button>
+      </div>
+      <div class="spell-list" data-level="${lvl}">${items}</div>
+    </div>`;
+  }).join('');
 
-function addSpell(levelIndex) {
-    if (!spellsData.spellbook[levelIndex].spells) {
-        spellsData.spellbook[levelIndex].spells = [];
-    }
-    spellsData.spellbook[levelIndex].spells.push({
-        name: "",
-        school: "",
-        prepared: false
+  container.querySelectorAll('.btn-add-spell').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lvl = btn.dataset.level;
+      if (!character.spellcasting.spells[lvl]) character.spellcasting.spells[lvl] = [];
+      character.spellcasting.spells[lvl].push({ name: '', prepared: false });
+      renderSpells();
     });
-    renderSpells();
+  });
+
+  container.querySelectorAll('.spell-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.spell-item');
+      const lvl = item.dataset.level;
+      const idx = parseInt(item.dataset.index);
+      character.spellcasting.spells[lvl].splice(idx, 1);
+      renderSpells();
+    });
+  });
+
+  container.querySelectorAll('.spell-check').forEach(chk => {
+    chk.addEventListener('change', () => {
+      chk.closest('.spell-item').classList.toggle('known', chk.checked);
+    });
+  });
 }
 
-function removeSpell(levelIndex, spellIndex) {
-    spellsData.spellbook[levelIndex].spells.splice(spellIndex, 1);
-    renderSpells();
+function collectSpells() {
+  [1,2,3,4,5,6,7,8,9].forEach(lvl => {
+    character.spellcasting.spells[lvl] = [];
+    document.querySelectorAll(`.spell-list[data-level="${lvl}"] .spell-item`).forEach(row => {
+      character.spellcasting.spells[lvl].push({
+        name: row.querySelector('.spell-name-input').value,
+        prepared: row.querySelector('.spell-check').checked
+      });
+    });
+  });
 }
 
-function toggleSpell(levelIndex, spellIndex) {
-    const spell = spellsData.spellbook[levelIndex].spells[spellIndex];
-    spell.prepared = !spell.prepared;
-    renderSpells();
+function renderMetamagic() {
+  const container = document.getElementById('metamagicContainer');
+  const list = character.metamagic || [];
+  container.innerHTML = list.map((m, i) => `
+    <div class="metamagic-item ${m.active ? 'active' : ''}" data-index="${i}">
+      <div class="metamagic-header">
+        <input type="checkbox" class="meta-active" ${m.active ? 'checked' : ''}>
+        <input type="text" class="meta-name" value="${esc(m.name)}">
+        <button class="btn-remove meta-remove">✕</button>
+      </div>
+      <textarea class="meta-desc">${esc(m.description)}</textarea>
+    </div>
+  `).join('');
+
+  container.querySelectorAll('.meta-remove').forEach((btn, i) => {
+    btn.addEventListener('click', () => {
+      character.metamagic.splice(i, 1);
+      renderMetamagic();
+    });
+  });
+  container.querySelectorAll('.meta-active').forEach((chk, i) => {
+    chk.addEventListener('change', () => {
+      chk.closest('.metamagic-item').classList.toggle('active', chk.checked);
+    });
+  });
 }
 
-function renderFeats() {
-    const container = document.getElementById('featsContainer');
-    const feats = characterData.feats || [];
-    
-    container.innerHTML = feats.map((feat, index) => `
-        <div class="item-row">
-            <div style="flex: 1;">
-                <input type="text" class="input input-wide" value="${feat.name || ''}" 
-                       onchange="characterData.feats[${index}].name = this.value" 
-                       placeholder="Nombre de la dote" style="margin-bottom: 5px;">
-                <textarea class="textarea" 
-                          onchange="characterData.feats[${index}].description = this.value" 
-                          placeholder="Descripción">${feat.description || ''}</textarea>
-            </div>
-            <button class="btn btn-secondary btn-small" onclick="removeFeat(${index})">✖</button>
-        </div>
-    `).join('');
+function collectMetamagic() {
+  character.metamagic = [];
+  document.querySelectorAll('.metamagic-item').forEach(row => {
+    character.metamagic.push({
+      name: row.querySelector('.meta-name').value,
+      description: row.querySelector('.meta-desc').value,
+      active: row.querySelector('.meta-active').checked
+    });
+  });
 }
 
-function addFeat() {
-    if (!characterData.feats) characterData.feats = [];
-    characterData.feats.push({ name: "", description: "" });
-    renderFeats();
+function renderDeathSaves() {
+  const ds = character.combat?.deathSaves || { successes: 0, failures: 0 };
+  const succEl = document.getElementById('deathSuccesses');
+  const failEl = document.getElementById('deathFailures');
+
+  succEl.innerHTML = [0,1,2].map(i =>
+    `<div class="death-dot ${i < ds.successes ? 'active' : ''}" data-type="success" data-val="${i+1}"></div>`
+  ).join('');
+  failEl.innerHTML = [0,1,2].map(i =>
+    `<div class="death-dot failure ${i < ds.failures ? 'active' : ''}" data-type="failure" data-val="${i+1}"></div>`
+  ).join('');
+
+  document.querySelectorAll('.death-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+      const type = dot.dataset.type;
+      const val = parseInt(dot.dataset.val);
+      if (type === 'success') {
+        character.combat.deathSaves.successes = character.combat.deathSaves.successes === val ? val - 1 : val;
+      } else {
+        character.combat.deathSaves.failures = character.combat.deathSaves.failures === val ? val - 1 : val;
+      }
+      renderDeathSaves();
+    });
+  });
 }
 
-function removeFeat(index) {
-    characterData.feats.splice(index, 1);
-    renderFeats();
+function esc(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-function renderEquipment() {
-    const container = document.getElementById('equipmentContainer');
-    const equipment = characterData.equipment || [];
-    
-    container.innerHTML = equipment.map((item, index) => `
-        <div class="item-row">
-            <div style="flex: 1;">
-                <input type="text" class="input input-wide" value="${item.name || ''}" 
-                       onchange="characterData.equipment[${index}].name = this.value" 
-                       placeholder="Nombre del objeto" style="margin-bottom: 8px;">
-                <div style="display: flex; gap: 10px;">
-                    <div>
-                        <label style="color: #5eead4; font-size: 0.85rem; display: block; margin-bottom: 3px;">Cantidad</label>
-                        <input type="number" class="input" value="${item.quantity || 1}" 
-                               onchange="characterData.equipment[${index}].quantity = parseInt(this.value); renderEquipment()" 
-                               style="width: 80px;">
-                    </div>
-                    <div>
-                        <label style="color: #5eead4; font-size: 0.85rem; display: block; margin-bottom: 3px;">Peso (lb)</label>
-                        <input type="number" class="input" value="${item.weight || 0}" 
-                               onchange="characterData.equipment[${index}].weight = parseFloat(this.value); renderEquipment()" 
-                               style="width: 80px;">
-                    </div>
-                </div>
-            </div>
-            <button class="btn btn-secondary btn-small" onclick="removeItem(${index})">✖</button>
-        </div>
-    `).join('');
+// ============================================
+// EVENTOS
+// ============================================
+
+function initTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    });
+  });
 }
 
-function addItem() {
-    if (!characterData.equipment) characterData.equipment = [];
-    characterData.equipment.push({ name: "", quantity: 1, weight: 0 });
-    renderEquipment();
+function initButtons() {
+  document.getElementById('btnSave').addEventListener('click', saveGrimorio);
+  document.getElementById('btnReset').addEventListener('click', () => {
+    if (confirm('¿Recargar datos desde character.json? Se perderán cambios no guardados.')) {
+      loadCharacter();
+    }
+  });
+
+  document.getElementById('btnAddSkill').addEventListener('click', () => {
+    character.skills.push({ name: 'Nueva Habilidad', ability: 'int', proficient: false, expertise: false, bonus: 0 });
+    renderSkills();
+  });
+
+  document.getElementById('btnAddAttack').addEventListener('click', () => {
+    character.attacks.push({ name: '', bonus: '', damage: '' });
+    renderAttacks();
+  });
+
+  document.getElementById('btnAddCantrip').addEventListener('click', () => {
+    if (!character.spellcasting.cantrips) character.spellcasting.cantrips = [];
+    character.spellcasting.cantrips.push({ name: '', notes: '' });
+    renderCantrips();
+  });
+
+  document.getElementById('btnAddMetamagic').addEventListener('click', () => {
+    if (!character.metamagic) character.metamagic = [];
+    character.metamagic.push({ name: 'Nueva Metamagia', description: '', active: false });
+    renderMetamagic();
+  });
+
+  document.getElementById('profBonus').addEventListener('input', () => {
+    character.proficiencyBonus = num('profBonus');
+    renderSaves();
+    renderSkills();
+    calculateSpellStats();
+  });
+
+  document.getElementById('spellAbility').addEventListener('change', calculateSpellStats);
+
+  ['hpCurrent', 'hpMax'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateHPBar);
+  });
 }
 
-function removeItem(index) {
-    characterData.equipment.splice(index, 1);
-    renderEquipment();
-}
-
-function renderLanguages() {
-    document.getElementById('languages').value = (characterData.languages || []).join(', ');
-}
-
-function renderWealth() {
-    const wealth = characterData.wealth || {};
-    document.getElementById('gold').value = wealth.gold || 0;
-    document.getElementById('silver').value = wealth.silver || 0;
-    document.getElementById('copper').value = wealth.copper || 0;
-    document.getElementById('platinum').value = wealth.platinum || 0;
-    document.getElementById('treasures').value = wealth.treasures || "";
-}
-
-function updateHP() {
-    const current = parseInt(document.getElementById('hpCurrent').value);
-    const max = parseInt(document.getElementById('hpMax').value);
-    
-    characterData.hp.current = current;
-    characterData.hp.max = max;
-    
-    const percentage = Math.max(0, (current / max) * 100);
-    document.getElementById('hpBar').style.width = percentage + '%';
-    document.getElementById('hpBar').textContent = `${current}/${max}`;
-    
-    updateQuickStats();
-}
-
-function updateQuickStats() {
-    const hp = characterData.hp || { current: 0, max: 0 };
-    document.getElementById('hpDisplay').textContent = `${hp.current}/${hp.max}`;
-    
-    const combatMods = characterData.combatMods || { baseAttack: 0, ac: 0, initiative: 0 };
-    const saveMods = characterData.saveMods || { fort: 0, ref: 0, will: 0 };
-    
-    document.getElementById('acDisplay').textContent = (characterData.ac || 10) + (combatMods.ac || 0);
-    document.getElementById('initDisplay').textContent = `+${(characterData.initiative || 0) + (combatMods.initiative || 0)}`;
-    document.getElementById('baseAttackDisplay').textContent = `+${(characterData.baseAttack || 0) + (combatMods.baseAttack || 0)}`;
-    
-    const xp = characterData.experience || { current: 0, nextLevel: 0 };
-    document.getElementById('xpDisplay').textContent = `${xp.current} / ${xp.nextLevel}`;
-    
-    document.getElementById('hpCurrent').value = hp.current;
-    document.getElementById('hpMax').value = hp.max;
-    const percentage = Math.max(0, (hp.current / hp.max) * 100);
-    document.getElementById('hpBar').style.width = percentage + '%';
-    document.getElementById('hpBar').textContent = `${hp.current}/${hp.max}`;
-}
-
-function switchTab(tab) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    
-    event.target.classList.add('active');
-    document.getElementById(tab + 'Tab').classList.add('active');
-}
-
-window.addEventListener('load', init)
+document.addEventListener('DOMContentLoaded', () => {
+  initTabs();
+  initButtons();
+  loadCharacter();
+});

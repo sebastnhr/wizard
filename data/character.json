@@ -1,150 +1,88 @@
 {
-  "name": "",
-  "player": "",
-  "class": "Hechicero 1",
-  "level": 1,
-  "race": "",
-  "background": "",
-  "alignment": "",
-  "experience": 0,
+  "name": "Lyra Emberveil",
+  "player": "Jugador",
+  "class": "Hechicero",
+  "level": 6,
+  "race": "Tiefling",
+  "background": "Erudito",
+  "alignment": "Caótico Bueno",
+  "experience": 15000,
   "inspiration": false,
-  "proficiencyBonus": 2,
+  "proficiencyBonus": 3,
   "stats": {
-    "str": {
-      "score": 11,
-      "mod": 0
-    },
-    "dex": {
-      "score": 10,
-      "mod": 0
-    },
-    "con": {
-      "score": 10,
-      "mod": 0
-    },
-    "int": {
-      "score": 10,
-      "mod": 0
-    },
-    "wis": {
-      "score": 10,
-      "mod": 0
-    },
-    "cha": {
-      "score": 10,
-      "mod": 0
-    }
+    "str": { "score": 8, "mod": -1 },
+    "dex": { "score": 14, "mod": 2 },
+    "con": { "score": 14, "mod": 2 },
+    "int": { "score": 10, "mod": 0 },
+    "wis": { "score": 12, "mod": 1 },
+    "cha": { "score": 18, "mod": 4 }
   },
   "savingThrows": {
-    "str": {
-      "proficient": false,
-      "bonus": 0
-    },
-    "dex": {
-      "proficient": false,
-      "bonus": 0
-    },
-    "con": {
-      "proficient": false,
-      "bonus": 0
-    },
-    "int": {
-      "proficient": false,
-      "bonus": 0
-    },
-    "wis": {
-      "proficient": false,
-      "bonus": 0
-    },
-    "cha": {
-      "proficient": false,
-      "bonus": 0
-    }
+    "str": { "proficient": false, "bonus": 0 },
+    "dex": { "proficient": false, "bonus": 0 },
+    "con": { "proficient": true, "bonus": 0 },
+    "int": { "proficient": false, "bonus": 0 },
+    "wis": { "proficient": true, "bonus": 0 },
+    "cha": { "proficient": false, "bonus": 0 }
   },
   "skills": [
-    {
-      "name": "Arcana",
-      "ability": "int",
-      "proficient": false,
-      "expertise": false,
-      "bonus": 0
-    },
-    {
-      "name": "Percepción",
-      "ability": "wis",
-      "proficient": false,
-      "expertise": false,
-      "bonus": 0
-    }
+    { "name": "Arcana", "ability": "int", "proficient": true, "expertise": false, "bonus": 0 },
+    { "name": "Engaño", "ability": "cha", "proficient": true, "expertise": false, "bonus": 0 },
+    { "name": "Persuasión", "ability": "cha", "proficient": true, "expertise": false, "bonus": 0 },
+    { "name": "Religión", "ability": "int", "proficient": false, "expertise": false, "bonus": 0 },
+    { "name": "Percepción", "ability": "wis", "proficient": false, "expertise": false, "bonus": 0 },
+    { "name": "Sigilo", "ability": "dex", "proficient": false, "expertise": false, "bonus": 0 }
   ],
   "combat": {
-    "ac": 10,
-    "initiative": "0",
+    "ac": 13,
+    "initiative": 2,
     "speed": "30 pies",
-    "hp": {
-      "current": 8,
-      "max": 8,
-      "temp": 0
-    },
-    "hitDice": "1d6",
-    "deathSaves": {
-      "successes": 0,
-      "failures": 0
-    }
+    "hp": { "current": 38, "max": 38, "temp": 0 },
+    "hitDice": "6d6",
+    "deathSaves": { "successes": 0, "failures": 0 }
   },
-  "attacks": [],
+  "attacks": [
+    { "name": "Rayo de Fuego", "bonus": "+7", "damage": "2d6 fuego" },
+    { "name": "Daga", "bonus": "+5", "damage": "1d4+2 perforante" }
+  ],
   "spellcasting": {
     "ability": "cha",
-    "saveDC": 10,
-    "attackBonus": 2,
-    "sorceryPoints": {
-      "current": 0,
-      "max": 0
-    },
-    "origin": "",
+    "saveDC": 15,
+    "attackBonus": 7,
+    "sorceryPoints": { "current": 6, "max": 6 },
+    "origin": "Linaje Dracónico (Rojo)",
     "slots": {
-      "1": {
-        "used": 0,
-        "total": 0
-      },
-      "2": {
-        "used": 0,
-        "total": 0
-      },
-      "3": {
-        "used": 0,
-        "total": 0
-      },
-      "4": {
-        "used": 0,
-        "total": 0
-      },
-      "5": {
-        "used": 0,
-        "total": 0
-      },
-      "6": {
-        "used": 0,
-        "total": 0
-      },
-      "7": {
-        "used": 0,
-        "total": 0
-      },
-      "8": {
-        "used": 0,
-        "total": 0
-      },
-      "9": {
-        "used": 0,
-        "total": 0
-      }
+      "1": { "total": 4, "used": 0 },
+      "2": { "total": 3, "used": 0 },
+      "3": { "total": 3, "used": 0 },
+      "4": { "total": 0, "used": 0 },
+      "5": { "total": 0, "used": 0 },
+      "6": { "total": 0, "used": 0 },
+      "7": { "total": 0, "used": 0 },
+      "8": { "total": 0, "used": 0 },
+      "9": { "total": 0, "used": 0 }
     },
-    "cantrips": [],
+    "cantrips": [
+      { "name": "Prestidigitación", "notes": "" },
+      { "name": "Rayo de Escarcha", "notes": "" },
+      { "name": "Luz", "notes": "" },
+      { "name": "Toque Chocante", "notes": "" }
+    ],
     "spells": {
-      "1": [],
-      "2": [],
-      "3": [],
+      "1": [
+        { "name": "Escudo", "prepared": true },
+        { "name": "Misil Mágico", "prepared": true },
+        { "name": "Alarma", "prepared": false },
+        { "name": "Bola de Fuego", "prepared": false }
+      ],
+      "2": [
+        { "name": "Invisibilidad", "prepared": true },
+        { "name": "Sugerencia", "prepared": true }
+      ],
+      "3": [
+        { "name": "Bola de Fuego", "prepared": true },
+        { "name": "Contramágica", "prepared": false }
+      ],
       "4": [],
       "5": [],
       "6": [],
@@ -153,32 +91,35 @@
       "9": []
     }
   },
-  "metamagic": [],
-  "features": "",
+  "metamagic": [
+    { "name": "Hechizo Potenciado", "description": "Vuelve a tirar hasta la mitad de los dados de daño", "active": true },
+    { "name": "Hechizo Extendido", "description": "Duplica la duración del hechizo", "active": true }
+  ],
+  "features": "Origen Dracónico: Resistencia al fuego. Al lanzar un hechizo de daño, puedes añadir tu modificador de CAR al daño.\n\nFavor del Pacto: Puedes lanzar Detectar Magia y Alterar Apariencia a voluntad.",
   "traits": {
-    "personality": "",
-    "ideals": "",
-    "bonds": "",
-    "flaws": ""
+    "personality": "Curiosa y apasionada por los secretos arcanos. Habla con entusiasmo cuando descubre algo nuevo.",
+    "ideals": "El poder mágico debe usarse para proteger a los inocentes.",
+    "bonds": "Mi mentor desapareció investigando un portal planar — debo encontrarlo.",
+    "flaws": "A veces actúo impulsivamente cuando siento la magia fluir dentro de mí."
   },
   "appearance": {
-    "age": "",
-    "height": "",
-    "weight": "",
-    "eyes": "",
-    "skin": "",
-    "hair": ""
+    "age": "24",
+    "height": "1,65 m",
+    "weight": "58 kg",
+    "eyes": "Ámbar con destellos rojos",
+    "skin": "Carmesí oscuro",
+    "hair": "Negro con mechas carmesí"
   },
-  "backstory": "",
-  "allies": "",
-  "treasure": "",
-  "equipment": "",
-  "proficiencies": "",
+  "backstory": "Nacida con el sangrado de un dragón rojo ancestral, Lyra descubrió sus poderes durante una erupción mágica en su adolescencia. Desde entonces viaja buscando controlar la llama que arde en su interior.",
+  "allies": "La Hermandad del Velo Arcano — una sociedad secreta de magos en la ciudad de Neverwinter.",
+  "treasure": "Una gema roja que late con calor cuando lanza hechizos de fuego.",
+  "equipment": "Componente arcano, bolsa de componentes, mochila, kit de erudito, 2 dagas, túnica de viaje.",
+  "proficiencies": "Dagas, dardos, hondas, bastones, ballestas ligeras. Idiomas: Común, Infernal, Dracónico.",
   "wealth": {
     "cp": 0,
-    "sp": 0,
+    "sp": 15,
     "ep": 0,
-    "gp": 0,
+    "gp": 245,
     "pp": 0
   }
 }
