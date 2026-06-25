@@ -1,0 +1,184 @@
+{
+  "name": "",
+  "player": "",
+  "class": "Hechicero 1",
+  "level": 1,
+  "race": "",
+  "background": "",
+  "alignment": "",
+  "experience": 0,
+  "inspiration": false,
+  "proficiencyBonus": 2,
+  "stats": {
+    "str": {
+      "score": 10,
+      "mod": 0
+    },
+    "dex": {
+      "score": 10,
+      "mod": 0
+    },
+    "con": {
+      "score": 10,
+      "mod": 0
+    },
+    "int": {
+      "score": 10,
+      "mod": 0
+    },
+    "wis": {
+      "score": 10,
+      "mod": 0
+    },
+    "cha": {
+      "score": 10,
+      "mod": 0
+    }
+  },
+  "savingThrows": {
+    "str": {
+      "proficient": false,
+      "bonus": 0
+    },
+    "dex": {
+      "proficient": false,
+      "bonus": 0
+    },
+    "con": {
+      "proficient": false,
+      "bonus": 0
+    },
+    "int": {
+      "proficient": false,
+      "bonus": 0
+    },
+    "wis": {
+      "proficient": false,
+      "bonus": 0
+    },
+    "cha": {
+      "proficient": false,
+      "bonus": 0
+    }
+  },
+  "skills": [
+    {
+      "name": "Arcana",
+      "ability": "int",
+      "proficient": false,
+      "expertise": false,
+      "bonus": 0
+    },
+    {
+      "name": "Percepción",
+      "ability": "wis",
+      "proficient": false,
+      "expertise": false,
+      "bonus": 0
+    }
+  ],
+  "combat": {
+    "ac": 10,
+    "initiative": "0",
+    "speed": "30 pies",
+    "hp": {
+      "current": 8,
+      "max": 8,
+      "temp": 0
+    },
+    "hitDice": "1d6",
+    "deathSaves": {
+      "successes": 0,
+      "failures": 0
+    }
+  },
+  "attacks": [],
+  "spellcasting": {
+    "ability": "cha",
+    "saveDC": 10,
+    "attackBonus": 2,
+    "sorceryPoints": {
+      "current": 0,
+      "max": 0
+    },
+    "origin": "",
+    "slots": {
+      "1": {
+        "used": 0,
+        "total": 0
+      },
+      "2": {
+        "used": 0,
+        "total": 0
+      },
+      "3": {
+        "used": 0,
+        "total": 0
+      },
+      "4": {
+        "used": 0,
+        "total": 0
+      },
+      "5": {
+        "used": 0,
+        "total": 0
+      },
+      "6": {
+        "used": 0,
+        "total": 0
+      },
+      "7": {
+        "used": 0,
+        "total": 0
+      },
+      "8": {
+        "used": 0,
+        "total": 0
+      },
+      "9": {
+        "used": 0,
+        "total": 0
+      }
+    },
+    "cantrips": [],
+    "spells": {
+      "1": [],
+      "2": [],
+      "3": [],
+      "4": [],
+      "5": [],
+      "6": [],
+      "7": [],
+      "8": [],
+      "9": []
+    }
+  },
+  "metamagic": [],
+  "features": "",
+  "traits": {
+    "personality": "",
+    "ideals": "",
+    "bonds": "",
+    "flaws": ""
+  },
+  "appearance": {
+    "age": "",
+    "height": "",
+    "weight": "",
+    "eyes": "",
+    "skin": "",
+    "hair": ""
+  },
+  "backstory": "",
+  "allies": "",
+  "treasure": "",
+  "equipment": "",
+  "proficiencies": "",
+  "wealth": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 0,
+    "pp": 0
+  }
+}
